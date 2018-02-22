@@ -42,7 +42,7 @@ public class Ship extends MovableObject implements IStreerable {
 		int moveSpeed = this.getSpeed() <= max_speed ? this.getSpeed() + newSpeed : max_speed;
 		int moveDirection = this.getDirection() + newDirection;
 		this.setSpeed(moveSpeed);
-		this.setDirection(moveDirection);
+		this.changeDirection(moveDirection);
 	}
 	
 	public String toString() {

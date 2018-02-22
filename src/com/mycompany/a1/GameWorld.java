@@ -1,9 +1,8 @@
 package com.mycompany.a1;
 
 import com.mycompany.a1.gameObjects.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class GameWorld {
 	private int lives = 3;
@@ -11,47 +10,71 @@ public class GameWorld {
 	private int elapsed;
 	
 	// each object will be stored to specified list
-	HashMap<Integer, SpaceStation> spaceStationList = new HashMap<Integer, SpaceStation>();
-	HashMap<Double, Ship> shipList = new HashMap<Double, Ship>();
-	HashMap<Integer, Asteroid> asteroidList = new HashMap<Integer, Asteroid>();
-	HashMap<Integer, FlyingSaucer> flyingSaucerList = new HashMap<Integer, FlyingSaucer>();
-	HashMap<Integer, Missile> missileList = new HashMap<Integer, Missile>();
+	ArrayList<SpaceStation> spaceStationList = new ArrayList<SpaceStation>();
+	ArrayList<Ship> shipList = new ArrayList<Ship>();
+	ArrayList<Asteroid> asteroidList = new ArrayList<Asteroid>();
+	ArrayList<FlyingSaucer> flyingSaucerList = new ArrayList<FlyingSaucer>();
+	ArrayList<Missile> missileList = new ArrayList<Missile>();
 	
 	public GameWorld() {}
 	
 	public void init() {
 		
 		System.out.println("Game world initialized.");
-		addShip();
+		addSpaceStation();
+		Ship ship = addShip();
 		addAsteroid();
 		addFlyingSaucer();
 		showMap();
-		for(Map.Entry<Double, Ship> ship: shipList.entrySet()) {
-			for(int i = 0; i <= 14; i++ ) {	
-				shipFired(ship.getValue());
-				clockTick();
-			}
+
+		for(int i = 0; i <= 14; i++ ) {
+			shipFired(ship);
+		}
+		for(Missile missile: missileList) {
+			System.out.println(missile.toString());
+		}
+
+		for(int i = 0; i <= 14; i++ ) {
+			clockTick();
 		}
 	}
 	
 	public void clockTick() {
+		Iterator<SpaceStation> ssl = spaceStationList.iterator();
+		Iterator<Ship> shipl = shipList.iterator();
+		Iterator<Asteroid> astrl = asteroidList.iterator();
+		Iterator<FlyingSaucer> fsl = flyingSaucerList.iterator();
+		Iterator<Missile> msll = missileList.iterator();
 		// iterate through hashmaps and update locations
-		for(Map.Entry<Double, Ship> ship: shipList.entrySet()) {
-			ship.getValue().updateLocation(ship.getValue().getLocationX(), ship.getValue().getLocationY(), ship.getValue().getSpeed(), ship.getValue().getDirection());
+		while(ssl.hasNext()) {
+			SpaceStation ss = ssl.next();
+			if (ss.getBlinkRate() == 0) {
+				ss.setBlinking(false);
+			}
+			spaceStationList.set(spaceStationList.indexOf(ss), ss);
 		}
-		for(Entry<Integer, Asteroid> astr: asteroidList.entrySet()) {
-			astr.getValue().updateLocation(astr.getValue().getLocationX(), astr.getValue().getLocationY(), astr.getValue().getSpeed(), astr.getValue().getDirection());
+		while(shipl.hasNext()) {
+			Ship ship = shipl.next();
+			ship.updateLocation(ship.getLocationX(), ship.getLocationY(), ship.getSpeed(), ship.getDirection());
 		}
-		for(Entry<Integer, FlyingSaucer> fs: flyingSaucerList.entrySet()) {
-			fs.getValue().updateLocation(fs.getValue().getLocationX(), fs.getValue().getLocationY(), fs.getValue().getSpeed(), fs.getValue().getDirection());
+		while(astrl.hasNext()) {
+			Asteroid astr = astrl.next();
+			astr.updateLocation(astr.getLocationX(), astr.getLocationY(), astr.getSpeed(), astr.getDirection());
+			asteroidList.set(asteroidList.indexOf(astr), astr);
 		}
-		for(Entry<Integer, Missile> missile: missileList.entrySet()) {
-			if (missile.getValue().getFuel() == 0) missileList.remove(missile.getValue().getId());
+		while(astrl.hasNext()) {
+			FlyingSaucer fs = fsl.next();
+			fs.updateLocation(fs.getLocationX(), fs.getLocationY(), fs.getSpeed(), fs.getDirection());
+			flyingSaucerList.set(flyingSaucerList.indexOf(fs), fs);
+		}
+		while(msll.hasNext()) {
+			Missile missile = msll.next();
+			if (missile.getFuel() == 0) msll.remove();
 			else {
 				// decrement fuel by 1
-				missile.getValue().setFuel(missile.getValue().getFuel()-1);
-				missile.getValue().updateLocation(missile.getValue().getLocationX(), missile.getValue().getLocationY(), missile.getValue().getSpeed(), missile.getValue().getDirection());
-				missileList.put(missile.getValue().getId(), missile.getValue());
+				missile.setFuel(missile.getFuel()-1);
+				missile.updateLocation(missile.getLocationX(), missile.getLocationY(), missile.getSpeed(), missile.getDirection());
+				missileList.set(missileList.indexOf(missile), missile);
 			}
 		}
 		System.out.println("One tick");
@@ -66,10 +89,10 @@ public class GameWorld {
 	}
 	
 	public void showMap() {;
-		listAllSpaceStations();
-		listAllShips();
-		listAllAsteroids();
-		listAllFlyingSaucers();
+//		listAllSpaceStations();
+//		listAllShips();
+//		listAllAsteroids();
+//		listAllFlyingSaucers();
 		listAllMissiles();
 	}
 	
@@ -77,15 +100,16 @@ public class GameWorld {
 	
 	public void listAllShips() {
 		System.out.println("Ships:");
-		for(Map.Entry<Double, Ship> ship: shipList.entrySet()) {
-			System.out.println(ship.getValue().toString());
+		for(Ship ship: shipList) {
+			System.out.println(ship.toString());
 		}
 		System.out.println();
 	}
 	
-	public void addShip() {
+	public Ship addShip() {
 		Ship ship = new Ship();
-		shipList.put(ship.getLocationX()+ship.getLocationY(), ship);
+		shipList.add(ship);
+		return ship;
 	}
 	
 	public void shipDocked(Ship ship) {
@@ -95,34 +119,22 @@ public class GameWorld {
 	
 	public void moveShip(Ship ship, int newSpeed, int newDirection) {
 		ship.move(newSpeed, newDirection);
-		shipList.put(ship.getLocationX()+ship.getLocationY(), ship);
 	}
 	
 	public void turnRight(Ship ship) {
 		ship.changeDirection(2);
-		shipList.put(ship.getLocationX()+ship.getLocationY(), ship);
 	}
 	
 	public void turnLeft(Ship ship) {
 		ship.changeDirection(-2);
-		shipList.put(ship.getLocationX()+ship.getLocationY(), ship);
 	}
 	
 	public void jump(Ship ship) {
-		Ship newShip = new Ship();
-		newShip.setDirection(ship.getDirection());
-		newShip.setSpeed(ship.getSpeed());
-		newShip.setMissiles(ship.getMissiles());
-		newShip.setLocation(512.0, 384.0);
-		// replace old ship with new ship with new coordinates
-		// but same missile count, speed, direction
-		shipList.remove(ship.getLocationX()+ship.getLocationY());
-		shipList.put(newShip.getLocationX()+newShip.getLocationY(), ship);
+		ship.setLocation(512.0, 384.0);
 	}
 	
 	public void shipFired(Ship ship) {
 		ship.firedMissile();
-		shipList.put(ship.getLocationX()+ship.getLocationY(), ship);
 		addMissile(ship);
 	}
 	
@@ -130,89 +142,131 @@ public class GameWorld {
 	
 	public void listAllMissiles() {
 		System.out.println("Missiles:");
-		for(Map.Entry<Integer, Missile> missile: missileList.entrySet()) {
-			System.out.println(missile.getValue().toString());
+		for(Missile missile: missileList) {
+			System.out.println(missile.toString());
 		}
 		System.out.println();
 	}
 	
 	public void addMissile(Ship ship) {
 		Missile missile = new Missile(ship.getLocationX(), ship.getLocationY());
-		missileList.put(missile.getId(), missile);
+		missile.setDirection(ship.getDirection());
+		missileList.add(missile);
 	}
 	
 	// space station actions
 	
 	public void listAllSpaceStations() {
 		System.out.println("Space stations:");
-		for(Integer key: spaceStationList.keySet()) {
-			System.out.println("ID: " + key + "\n" + spaceStationList.get(key));
+		for(SpaceStation ss: spaceStationList) {
+			System.out.println("ID: " + ss.getId() + "\nLocation" + ss.toString());
 		}
 		System.out.println();
 	}
 	
 	public void addSpaceStation() {
 		SpaceStation spaceStation = new SpaceStation();
-		spaceStationList.put(spaceStation.getId(), spaceStation);
+		spaceStationList.add(spaceStation);
 	}
 	
 	// asteroid actions
 	
 	public void listAllAsteroids() {
 		System.out.println("Asteroids:");
-		for(Entry<Integer, Asteroid> astr: asteroidList.entrySet()) {
-			System.out.println(astr.getValue().toString());
+		for(Asteroid astr: asteroidList) {
+			System.out.println(astr.toString());
 		}
 		System.out.println();
 	}
 	
 	public void addAsteroid() {
 		Asteroid asteroid = new Asteroid();
-		asteroidList.put(asteroid.getId(), asteroid);
+		asteroidList.add(asteroid);
 	}
 	
 	// flying saucer actions
 	
 	public void listAllFlyingSaucers() {
 		System.out.println("Flying saucers:");
-		for(Entry<Integer, FlyingSaucer> fs: flyingSaucerList.entrySet()) {
-			System.out.println(fs.getValue().toString());
+		for(FlyingSaucer fs: flyingSaucerList) {
+			System.out.println(fs.toString());
 		}
 		System.out.println();
 	}
 	
 	public void addFlyingSaucer() {
 		FlyingSaucer flyingsaucer = new FlyingSaucer();
-		flyingSaucerList.put(flyingsaucer.getId(), flyingsaucer);
+		flyingSaucerList.add(flyingsaucer);
 	}
 	
 	// collisions
 	
-	public int collisionMissileAsteroid(Missile ms, Asteroid astr) {
-		System.out.println("+1: Asteroid has been destroyed!");
-		missileList.remove(ms.getId());
-		asteroidList.remove(astr.getId());
-		return score++;
+	public void collisionMissileAsteroid(Missile ms, Asteroid astr) {
+//		if (ms.getLocationX() == astr.getLocationX() && ms.getLocationY() == astr.getLocationY()) {	
+//			System.out.println("+1: Asteroid has been destroyed!");
+//			missileList.remove(ms.getId());
+//			asteroidList.remove(astr.getId());
+//			score++;
+//		}
+		missileList.remove(ms);
+		asteroidList.remove(astr);
 	}
 	
-	public int collisionMissileFlyingSaucer(Missile ms, FlyingSaucer fs) {
-		System.out.println("+2: Flying saucer has been destroyed!");
-		missileList.remove(ms.getId());
-		flyingSaucerList.remove(fs.getId());
-		return score += 2;
+	public void collisionMissileFlyingSaucer(Missile ms, FlyingSaucer fs) {
+//		if (ms.getLocationX() == fs.getLocationX() && ms.getLocationY() == fs.getLocationY()) {
+//			System.out.println("+2: Flying saucer has been destroyed!");
+//			missileList.remove(ms.getId());
+//			flyingSaucerList.remove(fs.getId());
+//			score += 2;
+//		}
+		missileList.remove(ms);
+		flyingSaucerList.remove(fs);
 	}
 	
-	public int collisionShipAsteroid(Ship ship, Asteroid astr) {
-		System.out.println("-1 life: Ship and asteroid destroyed.");
-		shipList.remove(ship.getLocationX()+ship.getLocationY());
-		asteroidList.remove(astr.getId());
-		return lives--;
+	public void collisionShipAsteroid(Ship ship, Asteroid astr) {
+//		if (ship.getLocationX() == astr.getLocationX() && ship.getLocationY() == astr.getLocationY()) {	
+//			System.out.println("-1 life: Ship and asteroid destroyed.");
+//			shipList.remove(ship);
+//			asteroidList.remove(astr.getId());
+//			lives--;
+//		}
+		shipList.remove(ship);
+		asteroidList.remove(astr);
 	}
 	
-	public int collisionShipFlyingSaucer(Ship ship, FlyingSaucer fs) {
-		System.out.println("-1 life: Ship and flying saucer destroyed.");
-		shipList.remove(ship.getLocationX()+ship.getLocationY());
-		flyingSaucerList.remove(fs.getId());
-		return lives--;
+	public void collisionShipFlyingSaucer(Ship ship, FlyingSaucer fs) {
+//		if (ship.getLocationX() == fs.getLocationX() && ship.getLocationY() == fs.getLocationY()) {
+//			System.out.println("-1 life: Ship and flying saucer destroyed.");
+//			shipList.remove(ship);
+//			flyingSaucerList.remove(fs.getId());
+//			lives--;
+//		}
+		shipList.remove(ship);
+		flyingSaucerList.remove(fs);
+	}
+	
+	public void collisionAsteroids(Asteroid astr) {
+		asteroidList.remove(astr);
+		asteroidList.remove(astr);
+	}
+	
+	// if remaining lives, restart game
+	// if no more lives, end the game
+	public void restartGame(){
+		//Check if player has lives left
+		if (lives > 0) {
+			init();
+		} else {
+			System.out.println();
+			System.out.println("You have 0 lives remaining.");
+			System.out.println("Game Over.");
+			System.exit(0);
+		}
+	}
+	
+	//quit game
+	public void quitGame(){
+		System.out.println("Quitting game. Thanks for playing.");
+		System.exit(0);
 	}
 }

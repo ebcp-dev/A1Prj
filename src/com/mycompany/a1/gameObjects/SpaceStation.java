@@ -6,11 +6,20 @@ public class SpaceStation extends FixedObject {
 	static Random rand = new Random();
 	private static int id = rand.nextInt(1000);
 	private int blinkRate;
+	private boolean blinking;
 	
 	public SpaceStation( ) {
 		Random rand = new Random();
 		blinkRate = rand.nextInt(5);
 		this.setColor(255, 45, 0);
+	}
+	
+	public boolean getBlinkStatus() {
+		return blinking;
+	}
+	
+	public void setBlinking(boolean blink) {
+		blinking = blink;
 	}
 	
 	public int getId() {
