@@ -36,13 +36,19 @@ public class Ship extends MovableObject implements IStreerable {
 		missiles = missiles < 12 ? 12 : missiles;
 	}
 
+	public void shipSpeed(int offset) {
+		int newSpeed = this.getSpeed() + offset;
+		if (newSpeed > 6) newSpeed = 6;
+		else if (newSpeed < 0) newSpeed = 0;
+		this.setSpeed(newSpeed);
+	}
+
 	public void move(int newSpeed, int newDirection) {
 		// update speed and direction if ship is moved
 		// if newSpeed exceeds max_speed, set speed to max_speed
 		int moveSpeed = this.getSpeed() <= max_speed ? this.getSpeed() + newSpeed : max_speed;
-		int moveDirection = this.getDirection() + newDirection;
 		this.setSpeed(moveSpeed);
-		this.changeDirection(moveDirection);
+		this.changeDirection(newDirection);
 	}
 	
 	public String toString() {

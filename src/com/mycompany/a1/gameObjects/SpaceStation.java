@@ -10,7 +10,7 @@ public class SpaceStation extends FixedObject {
 	
 	public SpaceStation( ) {
 		Random rand = new Random();
-		blinkRate = rand.nextInt(5);
+		blinkRate = (rand.nextInt(5 - 1) + 1) + 1;
 		this.setColor(255, 45, 0);
 	}
 	

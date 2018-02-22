@@ -11,32 +11,20 @@ public class GameWorld {
 	
 	// each object will be stored to specified list
 	ArrayList<SpaceStation> spaceStationList = new ArrayList<SpaceStation>();
-	ArrayList<Ship> shipList = new ArrayList<Ship>();
-	ArrayList<Asteroid> asteroidList = new ArrayList<Asteroid>();
-	ArrayList<FlyingSaucer> flyingSaucerList = new ArrayList<FlyingSaucer>();
-	ArrayList<Missile> missileList = new ArrayList<Missile>();
+	ArrayList<Ship> shipList;
+	ArrayList<Asteroid> asteroidList;
+	ArrayList<FlyingSaucer> flyingSaucerList;
+	ArrayList<Missile> missileList;
 	
 	public GameWorld() {}
 	
 	public void init() {
-		
+		spaceStationList = new ArrayList<SpaceStation>();
+		shipList = new ArrayList<Ship>();
+		asteroidList = new ArrayList<Asteroid>();
+		flyingSaucerList = new ArrayList<FlyingSaucer>();
+		missileList = new ArrayList<Missile>();
 		System.out.println("Game world initialized.");
-		addSpaceStation();
-		Ship ship = addShip();
-		addAsteroid();
-		addFlyingSaucer();
-		showMap();
-
-		for(int i = 0; i <= 14; i++ ) {
-			shipFired(ship);
-		}
-		for(Missile missile: missileList) {
-			System.out.println(missile.toString());
-		}
-
-		for(int i = 0; i <= 14; i++ ) {
-			clockTick();
-		}
 	}
 	
 	public void clockTick() {
@@ -82,17 +70,18 @@ public class GameWorld {
 		elapsed++;
 	}
 	
-	public void showState(Ship ship) {
+	public void showState() {
+		Ship ship = shipList.get(0);
 		System.out.println("Score: " + score);
 		System.out.println("Missiles: " + ship.getMissiles());
 		System.out.println("Elapsed: " + elapsed);
 	}
 	
 	public void showMap() {;
-//		listAllSpaceStations();
-//		listAllShips();
-//		listAllAsteroids();
-//		listAllFlyingSaucers();
+		listAllSpaceStations();
+		listAllShips();
+		listAllAsteroids();
+		listAllFlyingSaucers();
 		listAllMissiles();
 	}
 	
@@ -106,34 +95,50 @@ public class GameWorld {
 		System.out.println();
 	}
 	
-	public Ship addShip() {
+	public void addShip() {
 		Ship ship = new Ship();
 		shipList.add(ship);
-		return ship;
 	}
 	
-	public void shipDocked(Ship ship) {
+	public void shipDocked() {
+		Ship ship = shipList.get(0);
 		System.out.println("missiles reloaded: Shipped has docked and resupplied.");
 		ship.reloadMissiles();
+	}
+	
+	public void speedUp() {
+		Ship ship = shipList.get(0);
+		ship.shipSpeed(1);
+		System.out.println("Speed + 1: " + ship.getSpeed());
+	}
+	
+	public void speedDown() {
+		Ship ship = shipList.get(0);
+		ship.shipSpeed(-1);
+		System.out.println("Speed - 1: " + ship.getSpeed());
 	}
 	
 	public void moveShip(Ship ship, int newSpeed, int newDirection) {
 		ship.move(newSpeed, newDirection);
 	}
 	
-	public void turnRight(Ship ship) {
-		ship.changeDirection(2);
-	}
-	
-	public void turnLeft(Ship ship) {
+	public void turnLeft() {
+		Ship ship = shipList.get(0);
 		ship.changeDirection(-2);
 	}
 	
-	public void jump(Ship ship) {
+	public void turnRight() {
+		Ship ship = shipList.get(0);
+		ship.changeDirection(2);
+	}
+	
+	public void jump() {
+		Ship ship = shipList.get(0);
 		ship.setLocation(512.0, 384.0);
 	}
 	
-	public void shipFired(Ship ship) {
+	public void shipFired() {
+		Ship ship = shipList.get(0);
 		ship.firedMissile();
 		addMissile(ship);
 	}
@@ -208,8 +213,8 @@ public class GameWorld {
 //			asteroidList.remove(astr.getId());
 //			score++;
 //		}
-		missileList.remove(ms);
-		asteroidList.remove(astr);
+		missileList.remove(0);
+		asteroidList.remove(0);
 	}
 	
 	public void collisionMissileFlyingSaucer(Missile ms, FlyingSaucer fs) {
@@ -219,8 +224,8 @@ public class GameWorld {
 //			flyingSaucerList.remove(fs.getId());
 //			score += 2;
 //		}
-		missileList.remove(ms);
-		flyingSaucerList.remove(fs);
+		missileList.remove(0);
+		flyingSaucerList.remove(0);
 	}
 	
 	public void collisionShipAsteroid(Ship ship, Asteroid astr) {
@@ -230,8 +235,13 @@ public class GameWorld {
 //			asteroidList.remove(astr.getId());
 //			lives--;
 //		}
-		shipList.remove(ship);
-		asteroidList.remove(astr);
+		shipList.remove(0);
+		asteroidList.remove(0);
+	}
+	
+	public void collisionAsteroidFlyingSaucer(Asteroid astr, FlyingSaucer fs) {
+		asteroidList.remove(0);
+		flyingSaucerList.remove(0);
 	}
 	
 	public void collisionShipFlyingSaucer(Ship ship, FlyingSaucer fs) {
@@ -241,13 +251,44 @@ public class GameWorld {
 //			flyingSaucerList.remove(fs.getId());
 //			lives--;
 //		}
-		shipList.remove(ship);
-		flyingSaucerList.remove(fs);
+		shipList.remove(0);
+		flyingSaucerList.remove(0);
 	}
 	
 	public void collisionAsteroids(Asteroid astr) {
-		asteroidList.remove(astr);
-		asteroidList.remove(astr);
+		asteroidList.remove(0);
+		asteroidList.remove(0);
+	}
+	
+	//no arguments
+	public void collisionMissileAsteroid() {
+		missileList.remove(0);
+		asteroidList.remove(0);
+	}
+	
+	public void collisionAsteroids() {
+		asteroidList.remove(0);
+		asteroidList.remove(0);
+	}
+	
+	public void collisionShipAsteroid() {
+		shipList.remove(0);
+		asteroidList.remove(0);
+	}
+	
+	public void collisionAsteroidFlyingSaucer() {
+		asteroidList.remove(0);
+		flyingSaucerList.remove(0);
+	}
+	
+	public void collisionMissileFlyingSaucer() {
+		missileList.remove(0);
+		flyingSaucerList.remove(0);
+	}
+	
+	public void collisionShipFlyingSaucer() {
+		shipList.remove(0);
+		flyingSaucerList.remove(0);
 	}
 	
 	// if remaining lives, restart game
