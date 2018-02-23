@@ -11,7 +11,8 @@ import java.lang.String;
 import com.mycompany.a1.GameWorld;
 
 public class Game extends Form {
-	 private GameWorld gw;
+	private GameWorld gw;
+	boolean isQuitting = false;
 	
 	public Game() {
 		gw = new GameWorld();
@@ -29,13 +30,18 @@ public class Game extends Form {
 		myTextField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				String sCommand = myTextField.getText().toString();
+				if (sCommand.charAt(0) != 'y') {
+					isQuitting = false;
+				}
 				myTextField.clear();
-				System.out.println(sCommand);
 				switch (sCommand.charAt(0)) {
 					case 'a':
 						gw.addAsteroid();
 						break;
 					case 'y':
+						if (isQuitting) {
+							gw.quitGame();
+						}
 						gw.addFlyingSaucer();
 						break;
 					case 'b':
@@ -93,7 +99,8 @@ public class Game extends Form {
 						gw.showMap();
 						break;
 					case 'q':
-						gw.quitGame();
+						isQuitting = true;
+						System.out.println("Are you sure you want to quit? y/n.");
 						break;
 					default:
 						break;

@@ -38,7 +38,10 @@ public class Ship extends MovableObject implements IStreerable {
 
 	public void shipSpeed(int offset) {
 		int newSpeed = this.getSpeed() + offset;
-		if (newSpeed > 6) newSpeed = 6;
+		if (newSpeed > 6) {
+			System.out.println("Max speed reached.");
+			newSpeed = 6;
+		}
 		else if (newSpeed < 0) newSpeed = 0;
 		this.setSpeed(newSpeed);
 	}
@@ -49,6 +52,15 @@ public class Ship extends MovableObject implements IStreerable {
 		int moveSpeed = this.getSpeed() <= max_speed ? this.getSpeed() + newSpeed : max_speed;
 		this.setSpeed(moveSpeed);
 		this.changeDirection(newDirection);
+	}
+	
+	public void changeDirection(int offset) {
+		int newDirection = this.getDirection() + offset;
+		// keep direction within 0-359 degrees
+		if (newDirection > 359) newDirection = 0;
+		if (newDirection < 0) newDirection = 359;
+		newDirection += offset;
+		this.setDirection(newDirection);
 	}
 	
 	public String toString() {

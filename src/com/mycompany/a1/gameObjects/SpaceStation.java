@@ -18,16 +18,16 @@ public class SpaceStation extends FixedObject {
 		return blinking;
 	}
 	
+	public int getBlinkRate() {
+		return blinkRate;
+	}
+	
 	public void setBlinking(boolean blink) {
 		blinking = blink;
 	}
 	
 	public int getId() {
 		return id;
-	}
-	
-	public int getBlinkRate() {
-		return blinkRate;
 	}
 	
 	public void setBlinkRate(int newBlinkRate) {

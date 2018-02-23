@@ -2,19 +2,18 @@ package com.mycompany.a1;
 
 import com.mycompany.a1.gameObjects.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class GameWorld {
 	private int lives = 3;
 	private int score = 0;
-	private int elapsed;
+	private int elapsed = 0;
 	
 	// each object will be stored to specified list
-	ArrayList<SpaceStation> spaceStationList = new ArrayList<SpaceStation>();
-	ArrayList<Ship> shipList;
-	ArrayList<Asteroid> asteroidList;
-	ArrayList<FlyingSaucer> flyingSaucerList;
-	ArrayList<Missile> missileList;
+	private ArrayList<SpaceStation> spaceStationList;
+	private ArrayList<Ship> shipList;
+	private ArrayList<Asteroid> asteroidList;
+	private ArrayList<FlyingSaucer> flyingSaucerList;
+	private ArrayList<Missile> missileList;
 	
 	public GameWorld() {}
 	
@@ -28,52 +27,71 @@ public class GameWorld {
 	}
 	
 	public void clockTick() {
-		Iterator<SpaceStation> ssl = spaceStationList.iterator();
-		Iterator<Ship> shipl = shipList.iterator();
-		Iterator<Asteroid> astrl = asteroidList.iterator();
-		Iterator<FlyingSaucer> fsl = flyingSaucerList.iterator();
-		Iterator<Missile> msll = missileList.iterator();
-		// iterate through hashmaps and update locations
-		while(ssl.hasNext()) {
-			SpaceStation ss = ssl.next();
-			if (ss.getBlinkRate() == 0) {
-				ss.setBlinking(false);
+		if (!spaceStationList.isEmpty()) {
+			for(SpaceStation ss: spaceStationList) {
+				if ((elapsed % ss.getBlinkRate()) == 0) {
+					ss.setBlinking(true);
+					System.out.println("Space station " + spaceStationList.indexOf(ss) + " blinking.");
+					spaceStationList.set(spaceStationList.indexOf(ss), ss);
+				}
 			}
-			spaceStationList.set(spaceStationList.indexOf(ss), ss);
 		}
-		while(shipl.hasNext()) {
-			Ship ship = shipl.next();
-			ship.updateLocation(ship.getLocationX(), ship.getLocationY(), ship.getSpeed(), ship.getDirection());
+		if (!shipList.isEmpty()) {
+			for(Ship ship: shipList) {
+				ship.updateLocation(ship.getLocationX(), ship.getLocationY(), ship.getSpeed(), ship.getDirection());
+				shipList.set(shipList.indexOf(ship), ship);
+			}
 		}
-		while(astrl.hasNext()) {
-			Asteroid astr = astrl.next();
-			astr.updateLocation(astr.getLocationX(), astr.getLocationY(), astr.getSpeed(), astr.getDirection());
-			asteroidList.set(asteroidList.indexOf(astr), astr);
+		if (!asteroidList.isEmpty()) {
+			for(Asteroid astr: asteroidList) {
+				astr.updateLocation(astr.getLocationX(), astr.getLocationY(), astr.getSpeed(), astr.getDirection());
+				asteroidList.set(asteroidList.indexOf(astr), astr);
+				System.out.println(astr.toString());
+			}
 		}
-		while(astrl.hasNext()) {
-			FlyingSaucer fs = fsl.next();
-			fs.updateLocation(fs.getLocationX(), fs.getLocationY(), fs.getSpeed(), fs.getDirection());
-			flyingSaucerList.set(flyingSaucerList.indexOf(fs), fs);
+		if (!flyingSaucerList.isEmpty()) {
+			for(FlyingSaucer fs: flyingSaucerList) {
+				fs.updateLocation(fs.getLocationX(), fs.getLocationY(), fs.getSpeed(), fs.getDirection());
+				flyingSaucerList.set(flyingSaucerList.indexOf(fs), fs);
+			}
 		}
-		while(msll.hasNext()) {
-			Missile missile = msll.next();
-			if (missile.getFuel() == 0) msll.remove();
-			else {
-				// decrement fuel by 1
+		if (!missileList.isEmpty()) {
+			// store index of missiles to remove in this array
+			int[] missilesToRemove = new int[missileList.size()];
+			// traverse missile list to decrement fuel by 1 and update location
+			for(int i = 0; i < missileList.size(); i++) {
+				Missile missile = missileList.get(i);
+				// decrement fuel
 				missile.setFuel(missile.getFuel()-1);
+				// set index value to 1 if need to remove, 0 otherwise
+				if (missile.getFuel() == 0) missilesToRemove[i] = 1;
+				else missilesToRemove[i] = 0;
 				missile.updateLocation(missile.getLocationX(), missile.getLocationY(), missile.getSpeed(), missile.getDirection());
 				missileList.set(missileList.indexOf(missile), missile);
 			}
+			// can't remove items from collection while iterating over it
+			// so iterate through array of indexes to remove instead
+			for(int i = 0; i < missilesToRemove.length; i++) {
+				if (missilesToRemove[i] == 1) {
+					missileList.remove(i);
+					System.out.println("Missile removed.");
+				}
+			}
 		}
-		System.out.println("One tick");
 		showMap();
 		elapsed++;
+		System.out.println("Elapsed: " + elapsed + "\n");
 	}
 	
 	public void showState() {
-		Ship ship = shipList.get(0);
+		System.out.println("Ships: " + shipList.size());
+		if (!shipList.isEmpty()) {
+			for (Ship ship: shipList) {
+				System.out.println("Ship " + shipList.indexOf(ship) + " Missiles: " + ship.getMissiles());
+			}
+		}
+		System.out.println("Lives left: " + lives);
 		System.out.println("Score: " + score);
-		System.out.println("Missiles: " + ship.getMissiles());
 		System.out.println("Elapsed: " + elapsed);
 	}
 	
@@ -88,69 +106,108 @@ public class GameWorld {
 	// ship actions
 	
 	public void listAllShips() {
-		System.out.println("Ships:");
-		for(Ship ship: shipList) {
-			System.out.println(ship.toString());
+		if (!shipList.isEmpty()) {
+			System.out.println("Ships:");
+			for(Ship ship: shipList) {
+				System.out.println(ship.toString());
+			}
+			System.out.println();
 		}
-		System.out.println();
 	}
 	
 	public void addShip() {
 		Ship ship = new Ship();
 		shipList.add(ship);
+		System.out.println("Ship added.");
 	}
 	
 	public void shipDocked() {
-		Ship ship = shipList.get(0);
-		System.out.println("missiles reloaded: Shipped has docked and resupplied.");
-		ship.reloadMissiles();
+		if (!shipList.isEmpty()) {
+			for(Ship ship: shipList) {
+				ship.reloadMissiles();
+				System.out.println("Ship " + shipList.indexOf(ship) + " has resupplied: Missiles reloaded.");
+			}
+		} else {
+			System.out.println("No ships in game.");
+		}
 	}
 	
 	public void speedUp() {
-		Ship ship = shipList.get(0);
-		ship.shipSpeed(1);
-		System.out.println("Speed + 1: " + ship.getSpeed());
+		if (!shipList.isEmpty()) {
+			for(Ship ship: shipList) {
+				ship.shipSpeed(1);
+				System.out.println("Ship " + shipList.indexOf(ship) + " speed + 1: " + ship.getSpeed());
+			}
+		} else {
+			System.out.println("No ships in game.");
+		}
 	}
 	
 	public void speedDown() {
-		Ship ship = shipList.get(0);
-		ship.shipSpeed(-1);
-		System.out.println("Speed - 1: " + ship.getSpeed());
+		if (!shipList.isEmpty()) {
+			for(Ship ship: shipList) {
+				ship.shipSpeed(-1);
+				System.out.println("Ship " + shipList.indexOf(ship) + " speed - 1: " + ship.getSpeed());
+			}
+		} else {
+			System.out.println("No ships in game.");
+		}
 	}
-	
-	public void moveShip(Ship ship, int newSpeed, int newDirection) {
-		ship.move(newSpeed, newDirection);
-	}
-	
+	// turn left/right by 2 degrees
 	public void turnLeft() {
-		Ship ship = shipList.get(0);
-		ship.changeDirection(-2);
+		if (!shipList.isEmpty()) {
+			for(Ship ship: shipList) {
+				ship.changeDirection(-2);
+				System.out.println("Direction: " + ship.getDirection());
+			}
+		} else {
+			System.out.println("No ships in game.");
+		}
 	}
 	
 	public void turnRight() {
-		Ship ship = shipList.get(0);
-		ship.changeDirection(2);
+		if (!shipList.isEmpty()) {
+			for(Ship ship: shipList) {
+				ship.changeDirection(2);
+				System.out.println("Direction: " + ship.getDirection());
+			}
+		} else {
+			System.out.println("No ships in game.");
+		}
 	}
 	
 	public void jump() {
-		Ship ship = shipList.get(0);
-		ship.setLocation(512.0, 384.0);
+		if (!shipList.isEmpty()) {
+			for(Ship ship: shipList) {
+				// reset to center of map
+				ship.setLocation(512.0, 384.0);
+				System.out.println("Jumped to center of map.");
+			}
+		} else {
+			System.out.println("No ships in game.");
+		}
 	}
 	
 	public void shipFired() {
-		Ship ship = shipList.get(0);
-		ship.firedMissile();
-		addMissile(ship);
+		if (!shipList.isEmpty()) {
+			for(Ship ship: shipList) {
+				ship.firedMissile();
+				addMissile(ship);
+			}
+		} else {
+			System.out.println("No ships in game.");
+		}
 	}
 	
 	// missile actions
-	
 	public void listAllMissiles() {
-		System.out.println("Missiles:");
-		for(Missile missile: missileList) {
-			System.out.println(missile.toString());
+		if (!missileList.isEmpty()) {
+			System.out.println("Missiles:");
+			for(Missile missile: missileList) {
+				System.out.println(missile.toString());
+			}
+			System.out.println();
 		}
-		System.out.println();
 	}
 	
 	public void addMissile(Ship ship) {
@@ -160,135 +217,132 @@ public class GameWorld {
 	}
 	
 	// space station actions
-	
 	public void listAllSpaceStations() {
-		System.out.println("Space stations:");
-		for(SpaceStation ss: spaceStationList) {
-			System.out.println("ID: " + ss.getId() + "\nLocation" + ss.toString());
+		if (!spaceStationList.isEmpty()) {
+			System.out.println("Space stations:");
+			for(SpaceStation ss: spaceStationList) {
+				System.out.println("ID: " + ss.getId() + "\n" + ss.toString());
+			}
+			System.out.println();
 		}
-		System.out.println();
 	}
 	
 	public void addSpaceStation() {
 		SpaceStation spaceStation = new SpaceStation();
 		spaceStationList.add(spaceStation);
+		System.out.println("Space station added.");
 	}
 	
 	// asteroid actions
-	
 	public void listAllAsteroids() {
-		System.out.println("Asteroids:");
-		for(Asteroid astr: asteroidList) {
-			System.out.println(astr.toString());
+		if (!asteroidList.isEmpty()) {
+			System.out.println("Asteroids:");
+			for(Asteroid astr: asteroidList) {
+				System.out.println(astr.toString());
+			}
+			System.out.println();
 		}
-		System.out.println();
 	}
 	
 	public void addAsteroid() {
 		Asteroid asteroid = new Asteroid();
 		asteroidList.add(asteroid);
+		System.out.println("Asteroid added.");
 	}
 	
 	// flying saucer actions
-	
 	public void listAllFlyingSaucers() {
-		System.out.println("Flying saucers:");
-		for(FlyingSaucer fs: flyingSaucerList) {
-			System.out.println(fs.toString());
-		}
-		System.out.println();
+		if (!flyingSaucerList.isEmpty()) {
+			System.out.println("Flying saucers:");
+			for(FlyingSaucer fs: flyingSaucerList) {
+				System.out.println(fs.toString());
+			}
+			System.out.println();
+		} 
 	}
 	
 	public void addFlyingSaucer() {
 		FlyingSaucer flyingsaucer = new FlyingSaucer();
 		flyingSaucerList.add(flyingsaucer);
+		System.out.println("Flying saucer added.");
 	}
 	
-	// collisions
-	
-	public void collisionMissileAsteroid(Missile ms, Asteroid astr) {
-//		if (ms.getLocationX() == astr.getLocationX() && ms.getLocationY() == astr.getLocationY()) {	
-//			System.out.println("+1: Asteroid has been destroyed!");
-//			missileList.remove(ms.getId());
-//			asteroidList.remove(astr.getId());
-//			score++;
-//		}
-		missileList.remove(0);
-		asteroidList.remove(0);
-	}
-	
-	public void collisionMissileFlyingSaucer(Missile ms, FlyingSaucer fs) {
-//		if (ms.getLocationX() == fs.getLocationX() && ms.getLocationY() == fs.getLocationY()) {
-//			System.out.println("+2: Flying saucer has been destroyed!");
-//			missileList.remove(ms.getId());
-//			flyingSaucerList.remove(fs.getId());
-//			score += 2;
-//		}
-		missileList.remove(0);
-		flyingSaucerList.remove(0);
-	}
-	
-	public void collisionShipAsteroid(Ship ship, Asteroid astr) {
-//		if (ship.getLocationX() == astr.getLocationX() && ship.getLocationY() == astr.getLocationY()) {	
-//			System.out.println("-1 life: Ship and asteroid destroyed.");
-//			shipList.remove(ship);
-//			asteroidList.remove(astr.getId());
-//			lives--;
-//		}
-		shipList.remove(0);
-		asteroidList.remove(0);
-	}
-	
-	public void collisionAsteroidFlyingSaucer(Asteroid astr, FlyingSaucer fs) {
-		asteroidList.remove(0);
-		flyingSaucerList.remove(0);
-	}
-	
-	public void collisionShipFlyingSaucer(Ship ship, FlyingSaucer fs) {
-//		if (ship.getLocationX() == fs.getLocationX() && ship.getLocationY() == fs.getLocationY()) {
-//			System.out.println("-1 life: Ship and flying saucer destroyed.");
-//			shipList.remove(ship);
-//			flyingSaucerList.remove(fs.getId());
-//			lives--;
-//		}
-		shipList.remove(0);
-		flyingSaucerList.remove(0);
-	}
-	
-	public void collisionAsteroids(Asteroid astr) {
-		asteroidList.remove(0);
-		asteroidList.remove(0);
-	}
-	
-	//no arguments
+	// check if list of collision objects is empty
+	// if any of them are them are empty, don't remove from game
 	public void collisionMissileAsteroid() {
-		missileList.remove(0);
-		asteroidList.remove(0);
-	}
-	
-	public void collisionAsteroids() {
-		asteroidList.remove(0);
-		asteroidList.remove(0);
-	}
-	
-	public void collisionShipAsteroid() {
-		shipList.remove(0);
-		asteroidList.remove(0);
-	}
-	
-	public void collisionAsteroidFlyingSaucer() {
-		asteroidList.remove(0);
-		flyingSaucerList.remove(0);
+		if (!missileList.isEmpty()) {
+			if(!asteroidList.isEmpty()) {
+				asteroidList.remove(0);
+				missileList.remove(0);
+				System.out.println("+1: Asteroid destroyed by missile.");
+				score++;
+			}
+		} else {
+			System.out.println("No missiles or asteroids in game.");
+		}
 	}
 	
 	public void collisionMissileFlyingSaucer() {
-		missileList.remove(0);
-		flyingSaucerList.remove(0);
+		if (!missileList.isEmpty()) {
+			if(!flyingSaucerList.isEmpty()) {
+				flyingSaucerList.remove(0);
+				missileList.remove(0);
+				System.out.println("+2: Flying saucer destroyed by missile.");
+				score+=2;
+			}
+		} else {
+			System.out.println("No missiles or flying saucers in game.");
+		}
+	}
+	
+	public void collisionShipAsteroid() {
+		if (!shipList.isEmpty()) {
+			if(!asteroidList.isEmpty()) {
+				asteroidList.remove(0);
+				shipList.remove(0);
+				System.out.println("-1 life: Ship and asteroid destroyed.");
+				lives--;
+				restartGame();
+			}
+		} else {
+			System.out.println("No asteroids or ships in game.");
+		}
+	}
+	
+	public void collisionAsteroidFlyingSaucer() {
+		if(!asteroidList.isEmpty()) {
+			if (!flyingSaucerList.isEmpty()) {
+				flyingSaucerList.remove(0);
+				asteroidList.remove(0);
+				System.out.println("Flying saucer and asteroid destroyed.");
+			}
+		} else {
+			System.out.println("No flying saucers or asteroids in game.");
+		}
 	}
 	
 	public void collisionShipFlyingSaucer() {
-		shipList.remove(0);
-		flyingSaucerList.remove(0);
+		if(!shipList.isEmpty()) {
+			if (!flyingSaucerList.isEmpty()) {
+				flyingSaucerList.remove(0);
+				shipList.remove(0);
+				System.out.println("-1 life: Ship and flying saucer destroyed.");
+				lives--;
+				restartGame();
+			}
+		} else {
+			System.out.println("No ships or flying saucers in game.");
+		}
+	}
+	
+	public void collisionAsteroids() {
+		if(!asteroidList.isEmpty()) {
+			asteroidList.remove(0);
+			asteroidList.remove(0);
+			System.out.println("Asteroids collided.");
+		} else {
+			System.out.println("No asteroids in game.");
+		}
 	}
 	
 	// if remaining lives, restart game
@@ -299,9 +353,8 @@ public class GameWorld {
 			init();
 		} else {
 			System.out.println();
-			System.out.println("You have 0 lives remaining.");
-			System.out.println("Game Over.");
-			System.exit(0);
+			System.out.println("Game over. You have 0 lives remaining.");
+			quitGame();
 		}
 	}
 	

@@ -29,12 +29,6 @@ public abstract class MovableObject extends GameObject {
 		return direction;
 	}
 	
-	public void changeDirection(int offset) {
-		if (this.getDirection() + offset > 359) direction = 0;
-		if (this.getDirection() - offset < 0) direction = 359;
-		direction += offset;
-	}
-	
 	public void setDirection(int newDirection) {
 		direction = newDirection;
 	}
